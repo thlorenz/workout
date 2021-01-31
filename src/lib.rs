@@ -1,5 +1,7 @@
 use wasm_bindgen::prelude::*;
 
+mod routine;
+
 #[wasm_bindgen(start)]
 pub fn main() -> Result<(), JsValue> {
     let window = web_sys::window().expect("no global `window` exists");
