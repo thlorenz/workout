@@ -18,11 +18,14 @@ mod routine;
 const ENTER_KEY: u32 = 13;
 const ESC_KEY: u32 = 27;
 
-fn init(_: Url, _: &mut impl Orders<Msg>) -> Model {
+fn init(_: Url, orders: &mut impl Orders<Msg>) -> Model {
     console_error_panic_hook::set_once();
+
+    orders.stream(streams::interval(1000, || Msg::OnTick));
+
     let text = "\
-crunch;https://hips.hearstapps.com/hmg-prod.s3.amazonaws.com/images/crunch-1588842220.jpg;30;15;
-left crunch;https://www.wikihow.com/images/thumb/7/75/Do-a-Side-Crunch-Step-4-Version-2.jpeg/aid2055959-v4-728px-Do-a-Side-Crunch-Step-4-Version-2.jpeg;30;15;
+crunch;https://hips.hearstapps.com/hmg-prod.s3.amazonaws.com/images/crunch-1588842220.jpg;8;6;
+left crunch;https://www.wikihow.com/images/thumb/7/75/Do-a-Side-Crunch-Step-4-Version-2.jpeg/aid2055959-v4-728px-Do-a-Side-Crunch-Step-4-Version-2.jpeg;8;6;
 right crunch;https://www.wikihow.com/images/thumb/f/fc/Do-a-Side-Crunch-Step-3-Version-2.jpeg/aid2055959-v4-728px-Do-a-Side-Crunch-Step-3-Version-2.jpeg;30;15;
 russian twist;https://www.snapfitness.com/assets/_blog/images/2013-nov-13-1113-workout-content1.jpg;30;15
 plank;https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ-NLh0Gt0LJ2bfP8L0CAmIr6u5vmeqVAREbA&usqp=CAU;30;15
@@ -57,12 +60,11 @@ struct ConfigData {
 }
 
 #[derive(Default)]
-struct PlayData {
+pub struct PlayData {
     step_idx: u16,
-    time_until_rest: u8,
-    time_until_step: u8,
-    resting: bool,
-    paused: bool,
+    time_remaining: u16,
+    is_resting: bool,
+    is_paused: bool,
 }
 
 enum Screen {
@@ -80,7 +82,14 @@ fn update(msg: Msg, model: &mut Model, _: &mut impl Orders<Msg>) {
     match msg {
         Msg::RoutineTextSubmitted => data.routine = Routine::from(data.routine_text.as_str()),
         Msg::RoutineTextChanged(text) => data.routine_text = text,
-        Msg::RoutineStarted => model.screen = Screen::Play,
+        Msg::RoutineRestarted | Msg::RoutineStarted => {
+            let mut play_data = &mut model.play_data;
+            play_data.step_idx = 0;
+            play_data.time_remaining = 5;
+            play_data.is_paused = false;
+            play_data.is_resting = true;
+            model.screen = Screen::Play;
+        }
         Msg::RoutineStopped => model.screen = Screen::Config,
         Msg::RoutineReversed => {
             // TODO(thlorenz): also reset times
@@ -93,8 +102,35 @@ fn update(msg: Msg, model: &mut Model, _: &mut impl Orders<Msg>) {
             if model.play_data.step_idx as usize + 1 < model.config_data.routine.nsteps() {
                 model.play_data.step_idx += 1
             }
+            // TODO(thlorenz): also reset times
+            model.play_data.step_idx = 0
         }
-        Msg::RoutineToggled => todo!(),
+        Msg::RoutineToggled => model.play_data.is_paused = !model.play_data.is_paused,
+        Msg::OnTick if !model.play_data.is_paused => {
+            let mut data = &mut model.play_data;
+            if data.time_remaining > 1 {
+                data.time_remaining -= 1
+            } else {
+                if data.is_resting {
+                    let step = model.config_data.routine.get(data.step_idx);
+                    data.time_remaining = step.duration;
+                    data.is_resting = false;
+                } else {
+                    let step = model.config_data.routine.get(data.step_idx);
+                    data.time_remaining = step.rest.unwrap_or_default();
+                    data.is_resting = true;
+
+                    // Determine and show next step
+                    let nsteps = model.config_data.routine.nsteps();
+                    if (data.step_idx as usize) < nsteps - 1 {
+                        data.step_idx += 1;
+                    } else {
+                        data.is_paused = true;
+                    }
+                }
+            }
+        }
+        Msg::OnTick => {}
     }
 }
 
@@ -110,7 +146,7 @@ fn view(model: &Model) -> Vec<Node<Msg>> {
         Screen::Play => {
             let step = model.config_data.routine.get(model.play_data.step_idx);
             nodes![
-                play_header_view(step),
+                play_header_view(&model.play_data, step),
                 player_main_view(&model.config_data.routine, model.play_data.step_idx)
             ]
         }

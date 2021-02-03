@@ -6,4 +6,6 @@ pub enum Msg {
     RoutineToggled,
     RoutineReversed,
     RoutineForwarded,
+    RoutineRestarted,
+    OnTick,
 }

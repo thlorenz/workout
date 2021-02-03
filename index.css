@@ -64,6 +64,16 @@ td {
   font-size: 18px;
 }
 
-.play-header > .button {
-  font-size: 18px;
+.play-header .button {
+  font-size: 32px;
+}
+
+.play-header-top {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+}
+
+.timer {
+  font-size: 44px;
 }
