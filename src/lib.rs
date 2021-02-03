@@ -2,6 +2,7 @@
 // TODO(thlorenz): remove
 #![allow(dead_code, unused_variables)]
 
+use audio::Audio;
 use config_view::{config_header_view, config_main_view};
 use msg::Msg;
 use play_view::{play_header_view, player_main_view};
@@ -9,6 +10,7 @@ use routine::Routine;
 use seed::{prelude::*, *};
 use web_sys::HtmlInputElement;
 
+mod audio;
 mod components;
 mod config_view;
 mod msg;
@@ -21,7 +23,7 @@ const ESC_KEY: u32 = 27;
 fn init(_: Url, orders: &mut impl Orders<Msg>) -> Model {
     console_error_panic_hook::set_once();
 
-    orders.stream(streams::interval(1000, || Msg::OnTick));
+    orders.stream(streams::interval(500, || Msg::OnTick));
 
     let text = "\
 crunch;https://hips.hearstapps.com/hmg-prod.s3.amazonaws.com/images/crunch-1588842220.jpg;8;6;
@@ -43,6 +45,8 @@ plank;https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ-NLh0Gt0LJ2bfP8L0CA
         },
         screen: Screen::Config,
         refs: Refs::default(),
+        audio: None,
+        is_front_of_tick: true,
     }
 }
 
@@ -50,7 +54,9 @@ struct Model {
     config_data: ConfigData,
     play_data: PlayData,
     screen: Screen,
+    audio: Option<Audio>,
     refs: Refs,
+    is_front_of_tick: bool,
 }
 
 #[derive(Default)]
@@ -77,7 +83,7 @@ struct Refs {
     routine_text_input: ElRef<HtmlInputElement>,
 }
 
-fn update(msg: Msg, model: &mut Model, _: &mut impl Orders<Msg>) {
+fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
     let mut data = &mut model.config_data;
     match msg {
         Msg::RoutineTextSubmitted => data.routine = Routine::from(data.routine_text.as_str()),
@@ -89,6 +95,9 @@ fn update(msg: Msg, model: &mut Model, _: &mut impl Orders<Msg>) {
             play_data.is_paused = false;
             play_data.is_resting = true;
             model.screen = Screen::Play;
+            if model.audio.is_none() {
+                model.audio = Audio::new().ok();
+            }
         }
         Msg::RoutineStopped => model.screen = Screen::Config,
         Msg::RoutineReversed => {
@@ -106,29 +115,49 @@ fn update(msg: Msg, model: &mut Model, _: &mut impl Orders<Msg>) {
             model.play_data.step_idx = 0
         }
         Msg::RoutineToggled => model.play_data.is_paused = !model.play_data.is_paused,
-        Msg::OnTick if !model.play_data.is_paused => {
-            let mut data = &mut model.play_data;
-            if data.time_remaining > 1 {
-                data.time_remaining -= 1
-            } else {
-                if data.is_resting {
-                    let step = model.config_data.routine.get(data.step_idx);
-                    data.time_remaining = step.duration;
-                    data.is_resting = false;
-                } else {
-                    let step = model.config_data.routine.get(data.step_idx);
-                    data.time_remaining = step.rest.unwrap_or_default();
-                    data.is_resting = true;
 
-                    // Determine and show next step
-                    let nsteps = model.config_data.routine.nsteps();
-                    if (data.step_idx as usize) < nsteps - 1 {
-                        data.step_idx += 1;
+        Msg::OnTick if !model.play_data.is_paused => {
+            if model.is_front_of_tick {
+                let mut data = &mut model.play_data;
+                if data.time_remaining > 1 {
+                    data.time_remaining -= 1;
+                } else {
+                    if data.is_resting {
+                        let step = model.config_data.routine.get(data.step_idx);
+                        data.time_remaining = step.duration;
+                        data.is_resting = false;
                     } else {
-                        data.is_paused = true;
+                        let step = model.config_data.routine.get(data.step_idx);
+                        data.time_remaining = step.rest.unwrap_or_default();
+                        data.is_resting = true;
+
+                        // Determine and show next step
+                        let nsteps = model.config_data.routine.nsteps();
+                        if (data.step_idx as usize) < nsteps - 1 {
+                            data.step_idx += 1;
+                        } else {
+                            data.is_paused = true;
+                        }
                     }
                 }
+
+                if let Some(audio) = &model.audio {
+                    match data.time_remaining {
+                        x if 1 < x && x <= 5 => {
+                            audio.play(440.0);
+                        }
+                        x if x == 1 => {
+                            audio.play(880.0);
+                        }
+                        _ => audio.stop(),
+                    }
+                }
+            } else {
+                if let Some(audio) = &model.audio {
+                    audio.stop();
+                }
             }
+            model.is_front_of_tick = !model.is_front_of_tick
         }
         Msg::OnTick => {}
     }

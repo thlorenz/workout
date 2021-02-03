@@ -12,6 +12,19 @@ seed = "0.8.0"
 wasm-bindgen = "0.2.70"
 regex = "1.4.3"
 
+[dependencies.web-sys]
+version = "0.3.4"
+features = [
+  'AudioContext',
+  'AudioContextState',
+  'AudioDestinationNode',
+  'AudioNode',
+  'AudioParam',
+  'GainNode',
+  'OscillatorNode',
+  'OscillatorType',
+]
+
 # wasmpack with the --dev option is slow which is why we need to make
 # release builds fast which we are doing below.
 # Here are the original configs which result in smaller/faster binaries,
