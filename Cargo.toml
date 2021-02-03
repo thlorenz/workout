@@ -8,15 +8,29 @@ edition = "2018"
 crate-type = ["cdylib"]
 
 [dependencies]
+seed = "0.8.0"
 wasm-bindgen = "0.2.70"
 regex = "1.4.3"
 
-[dependencies.web-sys]
-version = "0.3.4"
-features = [
-  'Document',
-  'Element',
-  'HtmlElement',
-  'Node',
-  'Window',
-]
+# wasmpack with the --dev option is slow which is why we need to make
+# release builds fast which we are doing below.
+# Here are the original configs which result in smaller/faster binaries,
+# but take a lot longer to compile.
+
+# [profile.release]
+# lto = true
+# opt-level = 'z'
+# codegen-units = 1
+
+# [package.metadata.wasm-pack.profile.release]
+# wasm-opt = ['-Os']
+
+# With the below settings we got compile time down to ~2 secs
+  
+[profile.release]
+lto = false
+opt-level = 0
+codegen-units = 4 
+
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = false

@@ -19,9 +19,23 @@ impl RoutineStep {
     }
 }
 
-#[derive(Debug, PartialEq)]
-struct Routine {
+#[derive(Default, Debug, PartialEq)]
+pub struct Routine {
     pub steps: Vec<RoutineStep>,
+}
+
+impl Routine {
+    pub fn get(&self, idx: u16) -> &RoutineStep {
+        &self.steps[idx as usize]
+    }
+
+    pub fn steps(&self) -> Vec<&RoutineStep> {
+        self.steps.iter().map(|x| x).collect()
+    }
+
+    pub fn nsteps(&self) -> usize {
+        self.steps.len()
+    }
 }
 
 impl From<&str> for Routine {
