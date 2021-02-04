@@ -114,7 +114,12 @@ fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
             // TODO(thlorenz): also reset times
             model.play_data.step_idx = 0
         }
-        Msg::RoutineToggled => model.play_data.is_paused = !model.play_data.is_paused,
+        Msg::RoutineToggled => {
+            model.play_data.is_paused = !model.play_data.is_paused;
+            if let Some(audio) = &model.audio {
+                audio.stop();
+            }
+        }
 
         Msg::OnTick if !model.play_data.is_paused => {
             if model.is_front_of_tick {
@@ -143,7 +148,7 @@ fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
 
                 if let Some(audio) = &model.audio {
                     match data.time_remaining {
-                        x if 1 < x && x <= 5 => {
+                        x if 1 < x && x <= 4 => {
                             audio.play(440.0);
                         }
                         x if x == 1 => {

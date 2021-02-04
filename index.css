@@ -1,3 +1,5 @@
+@import './timer.css';
+
 .routine-input {
   position: relative;
   margin: 0;
@@ -31,32 +33,15 @@ td {
   height: 120px;
 }
 
-.routine-step-img {
-  max-width: 160px;
-  max-height: 100px;
-}
-
-.routine-step-header-img-container {
-  width: 320px;
-  height: 200px;
-}
-
-.routine-step-header-img {
-  max-width: 320px;
-  max-height: 200px;
-}
-
 .routine-step-label {
   font-size: 22px;
   font-weight: bold;
   text-transform: capitalize;
 }
 
-.play-header {
-  align-content: center;
-  font-size: 32px;
-  font-weight: bold;
-  text-transform: capitalize;
+.routine-step-img {
+  max-width: 160px;
+  max-height: 100px;
 }
 
 .button {
@@ -64,16 +49,54 @@ td {
   font-size: 18px;
 }
 
+.play-header {
+  align-content: center;
+  font-size: 32px;
+  font-weight: bold;
+  text-transform: capitalize;
+  text-align: center;
+}
+
 .play-header .button {
   font-size: 32px;
 }
 
-.play-header-top {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-evenly;
+.play-header-step {
+  border: #59585c solid 2px;
+  border-radius: 3px;
+}
+.play-header-step-title {
+  position: absolute;
+  left: 15px;
+  top: 20px;
+  background: #59585cdd;
+  color: #eeeeee;
+  border-radius: 5px;
+  padding: 0 20px;
+}
+.play-header-step-resting-preamble {
+  font-size: 18px;
+}
+.play-header-step-resting-title {
+  font-size: 28px;
+}
+
+.play-header-step-img-container {
+  width: 94vw;
+  height: 45vh;
+  text-align: center;
+}
+
+.play-header-step-img {
+  max-width: 100%;
+  max-height: 35vh;
+  margin-top: 10vh;
 }
 
 .timer {
-  font-size: 44px;
+  position: absolute;
+  right: 15px;
+  top: 20px;
+  width: 140px;
+  height: 140px;
 }

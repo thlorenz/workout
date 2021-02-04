@@ -1,5 +1,5 @@
 use crate::{
-    components::routine_table,
+    components::{routine_table, timer},
     msg::Msg,
     routine::{Routine, RoutineStep},
     PlayData,
@@ -7,8 +7,38 @@ use crate::{
 use seed::{prelude::*, *};
 
 pub fn play_header_view(play_data: &PlayData, step: &RoutineStep) -> Node<Msg> {
+    let total_time = if play_data.is_resting {
+        step.rest.unwrap_or_default()
+    } else {
+        step.duration
+    };
+
     header![
         C!["play-header"],
+        div![
+            C!["play-header-step"],
+            div![
+                C!["play-header-step-title"],
+                IF!(!play_data.is_resting => h3![&step.title]),
+                IF!(play_data.is_resting => p![
+                    span![
+                    C!["play-header-step-resting-preamble"],
+                    "Resting, next up"],
+                    h3![
+                        C!["play-header-step-resting-title"],
+                        &step.title
+                    ]
+                ]),
+            ],
+            div![
+                C!["play-header-step-img-container"],
+                img![
+                    C!["play-header-step-img"],
+                    attrs!(At::Src => &step.image_url)
+                ],
+            ],
+            timer(total_time, play_data.time_remaining),
+        ],
         div![
             input![
                 C!["button"],
@@ -50,18 +80,6 @@ pub fn play_header_view(play_data: &PlayData, step: &RoutineStep) -> Node<Msg> {
                 },
                 mouse_ev(Ev::Click, |_| Msg::RoutineStopped),
             ]
-        ],
-        h1![&step.title],
-        div![
-            C!["play-header-top"],
-            div![
-                C!["routine-step-header-img-container"],
-                img![
-                    C!["routine-step-header-img"],
-                    attrs!(At::Src => &step.image_url)
-                ],
-            ],
-            timer_view(play_data),
         ],
     ]
 }
