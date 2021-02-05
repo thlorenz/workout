@@ -73,6 +73,7 @@ pub struct PlayData {
     is_paused: bool,
 }
 
+#[derive(PartialEq)]
 enum Screen {
     Config,
     Play,
@@ -127,7 +128,7 @@ fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
             }
         }
 
-        Msg::OnTick if !model.play_data.is_paused => {
+        Msg::OnTick if (&Screen::Play, false) == (&model.screen, model.play_data.is_paused) => {
             if model.is_front_of_tick {
                 let mut data = &mut model.play_data;
                 if data.time_remaining > 1 {
