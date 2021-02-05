@@ -6,7 +6,7 @@ use crate::msg::Msg;
 pub fn config_header_view(routine_text: &str) -> Node<Msg> {
     header![
         C!["header"],
-        h1!["workout routine"],
+        h1![C!["header-title"], "Workout Routine"],
         textarea![
             C!["routine-input"],
             attrs! {
@@ -17,21 +17,24 @@ pub fn config_header_view(routine_text: &str) -> Node<Msg> {
             },
             input_ev(Ev::Input, Msg::RoutineTextChanged),
         ],
-        input![
-            C!["button"],
-            attrs! {
-                At::Type => "button"
-                At::Value => "submit"
-            },
-            mouse_ev(Ev::Click, |_| Msg::RoutineTextSubmitted),
-        ],
-        input![
-            C!["button"],
-            attrs! {
-                At::Type => "button"
-                At::Value => "▶",
-            },
-            mouse_ev(Ev::Click, |_| Msg::RoutineStarted),
+        div![
+            C!["config-buttons"],
+            input![
+                C!["button"],
+                attrs! {
+                    At::Type => "button"
+                    At::Value => "Load Sample"
+                },
+                mouse_ev(Ev::Click, |_| Msg::RoutineLoadSample),
+            ],
+            input![
+                C!["button"],
+                attrs! {
+                    At::Type => "button"
+                    At::Value => "▶️",
+                },
+                mouse_ev(Ev::Click, |_| Msg::RoutineStarted),
+            ]
         ]
     ]
 }

@@ -20,9 +20,60 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+.header {
+  position: fixed;
+  top: 0px;
+  left: 5px;
+  right: 5px;
+  padding: 10px;
+  background: #59585c;
+  color: whitesmoke;
+  border: 0px solid black;
+  border-radius: 0 0 5px 5px;
+}
+
+.header + .main {
+  padding-top: 250px;
+}
+
+.play-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 99vw;
+  align-content: center;
+  font-size: 32px;
+  font-weight: bold;
+  text-transform: capitalize;
+  text-align: center;
+  background: white;
+}
+
+.play-header + .main {
+  padding-top: 340px;
+}
+
+.header-title {
+  text-align: center;
+}
+
+textarea {
+  color: #0bf;
+}
+textarea::placeholder {
+  color: whitesmoke;
+}
+
 .routine-steps {
   width: 100%;
   table-layout: auto;
+}
+
+.config-buttons {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: space-around;
 }
 
 th,
@@ -49,14 +100,6 @@ td {
   font-size: 18px;
 }
 
-.play-header {
-  align-content: center;
-  font-size: 32px;
-  font-weight: bold;
-  text-transform: capitalize;
-  text-align: center;
-}
-
 .play-header .button {
   font-size: 32px;
 }
@@ -64,7 +107,9 @@ td {
 .play-header-step {
   border: #59585c solid 2px;
   border-radius: 3px;
+  margin: 5px 1px 5px 5px;
 }
+
 .play-header-step-title {
   position: absolute;
   left: 15px;
