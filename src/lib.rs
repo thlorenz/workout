@@ -154,10 +154,10 @@ fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
                 if let Some(audio) = &model.audio {
                     match data.time_remaining {
                         x if 1 < x && x <= 4 => {
-                            audio.play(440.0);
+                            audio.play(220.0);
                         }
                         x if x == 1 => {
-                            audio.play(880.0);
+                            audio.play(440.0);
                         }
                         _ => audio.stop(),
                     }
