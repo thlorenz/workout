@@ -26,11 +26,11 @@ fn init(_: Url, orders: &mut impl Orders<Msg>) -> Model {
     orders.stream(streams::interval(500, || Msg::OnTick));
 
     let text = "\
-crunch;https://hips.hearstapps.com/hmg-prod.s3.amazonaws.com/images/crunch-1588842220.jpg;8;6;
-left crunch;https://www.wikihow.com/images/thumb/7/75/Do-a-Side-Crunch-Step-4-Version-2.jpeg/aid2055959-v4-728px-Do-a-Side-Crunch-Step-4-Version-2.jpeg;8;6;
-right crunch;https://www.wikihow.com/images/thumb/f/fc/Do-a-Side-Crunch-Step-3-Version-2.jpeg/aid2055959-v4-728px-Do-a-Side-Crunch-Step-3-Version-2.jpeg;30;15;
-russian twist;https://www.snapfitness.com/assets/_blog/images/2013-nov-13-1113-workout-content1.jpg;30;15
-plank;https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ-NLh0Gt0LJ2bfP8L0CAmIr6u5vmeqVAREbA&usqp=CAU;30;15
+crunch;https://hips.hearstapps.com/hmg-prod.s3.amazonaws.com/images/crunch-1588842220.jpg;10;5;
+left crunch;https://www.wikihow.com/images/thumb/7/75/Do-a-Side-Crunch-Step-4-Version-2.jpeg/aid2055959-v4-728px-Do-a-Side-Crunch-Step-4-Version-2.jpeg;10;5;
+right crunch;https://www.wikihow.com/images/thumb/f/fc/Do-a-Side-Crunch-Step-3-Version-2.jpeg/aid2055959-v4-728px-Do-a-Side-Crunch-Step-3-Version-2.jpeg;10;5;
+russian twist;https://www.snapfitness.com/assets/_blog/images/2013-nov-13-1113-workout-content1.jpg;10;5
+plank;https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ-NLh0Gt0LJ2bfP8L0CAmIr6u5vmeqVAREbA&usqp=CAU;10;5
 ";
     let routine = Routine::from(text);
 
@@ -83,11 +83,19 @@ struct Refs {
     routine_text_input: ElRef<HtmlInputElement>,
 }
 
+fn reset_step(data: &mut PlayData) {
+    data.time_remaining = 5;
+    data.is_resting = true;
+}
+
 fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
     let mut data = &mut model.config_data;
     match msg {
+        // Config
         Msg::RoutineTextSubmitted => data.routine = Routine::from(data.routine_text.as_str()),
         Msg::RoutineTextChanged(text) => data.routine_text = text,
+
+        // Play
         Msg::RoutineRestarted | Msg::RoutineStarted => {
             let mut play_data = &mut model.play_data;
             play_data.step_idx = 0;
@@ -101,18 +109,16 @@ fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
         }
         Msg::RoutineStopped => model.screen = Screen::Config,
         Msg::RoutineReversed => {
-            // TODO(thlorenz): also reset times
+            reset_step(&mut model.play_data);
             if model.play_data.step_idx > 0 {
-                model.play_data.step_idx -= 1
+                model.play_data.step_idx -= 1;
             }
         }
         Msg::RoutineForwarded => {
-            // TODO(thlorenz): also reset times
+            reset_step(&mut model.play_data);
             if model.play_data.step_idx as usize + 1 < model.config_data.routine.nsteps() {
-                model.play_data.step_idx += 1
+                model.play_data.step_idx += 1;
             }
-            // TODO(thlorenz): also reset times
-            model.play_data.step_idx = 0
         }
         Msg::RoutineToggled => {
             model.play_data.is_paused = !model.play_data.is_paused;
@@ -141,7 +147,7 @@ fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
                         if (data.step_idx as usize) < nsteps - 1 {
                             data.step_idx += 1;
                         } else {
-                            data.is_paused = true;
+                            model.screen = Screen::Config;
                         }
                     }
                 }
