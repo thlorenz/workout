@@ -23,15 +23,31 @@ pub fn config_header_view(routine_text: &str) -> Node<Msg> {
                 C!["button"],
                 attrs! {
                     At::Type => "button"
-                    At::Value => "Load Sample"
+                    At::Value => "Load"
                 },
-                mouse_ev(Ev::Click, |_| Msg::RoutineLoadSample),
+                mouse_ev(Ev::Click, |_| Msg::RoutineLoad),
             ],
             input![
                 C!["button"],
                 attrs! {
                     At::Type => "button"
-                    At::Value => "▶️",
+                    At::Value => "Save"
+                },
+                mouse_ev(Ev::Click, |_| Msg::RoutineSave),
+            ],
+            input![
+                C!["button"],
+                attrs! {
+                    At::Type => "button"
+                    At::Value => "Clear"
+                },
+                mouse_ev(Ev::Click, |_| Msg::RoutineClear),
+            ],
+            input![
+                C!["button"],
+                attrs! {
+                    At::Type => "button"
+                    At::Value => "Start",
                 },
                 mouse_ev(Ev::Click, |_| Msg::RoutineStarted),
             ]

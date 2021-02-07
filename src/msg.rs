@@ -1,7 +1,9 @@
 pub enum Msg {
     // Config
     RoutineTextChanged(String),
-    RoutineLoadSample,
+    RoutineSave,
+    RoutineClear,
+    RoutineLoad,
     // Play
     RoutineStarted,
     RoutineStopped,

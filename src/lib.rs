@@ -8,7 +8,7 @@ use msg::Msg;
 use play_view::{play_header_view, player_main_view};
 use routine::Routine;
 use sample::SAMPLE;
-use seed::{prelude::*, *};
+use seed::{browser::web_storage::WebStorageError, prelude::*, *};
 use web_sys::HtmlInputElement;
 
 mod audio;
@@ -21,14 +21,37 @@ mod sample;
 
 const ENTER_KEY: u32 = 13;
 const ESC_KEY: u32 = 27;
+const STORAGE_KEY: &str = "workout";
+
+fn load_routine(fallback_to_sample: bool) -> (String, Routine) {
+    let stored: Result<String, WebStorageError> = LocalStorage::get(STORAGE_KEY);
+    match stored {
+        Ok(routine_text) => {
+            let routine = Routine::from(routine_text.as_str());
+            (routine_text, routine)
+        }
+        Err(_) => {
+            if fallback_to_sample {
+                (SAMPLE.to_string(), Routine::from(SAMPLE))
+            } else {
+                ("".to_string(), Routine::default())
+            }
+        }
+    }
+}
 
 fn init(_: Url, orders: &mut impl Orders<Msg>) -> Model {
     console_error_panic_hook::set_once();
 
+    let (routine_text, routine) = load_routine(false);
+
     orders.stream(streams::interval(500, || Msg::OnTick));
 
     Model {
-        config_data: ConfigData::default(),
+        config_data: ConfigData {
+            routine_text,
+            routine,
+        },
         play_data: PlayData {
             ..Default::default()
         },
@@ -92,7 +115,21 @@ fn update(msg: Msg, model: &mut Model, orders: &mut impl Orders<Msg>) {
             data.routine_text = text;
             data.routine = Routine::from(data.routine_text.as_str());
         }
-        Msg::RoutineLoadSample => load_sample(&mut model.config_data),
+        Msg::RoutineSave => {
+            LocalStorage::insert(STORAGE_KEY, &model.config_data.routine_text)
+                .expect("save data to LocalStorage");
+        }
+        Msg::RoutineClear => {
+            data.routine_text = "".to_string();
+            data.routine = Routine::default();
+        }
+        Msg::RoutineLoad => {
+            let (routine_text, routine) = load_routine(true);
+            model.config_data = ConfigData {
+                routine_text,
+                routine,
+            };
+        }
 
         // Play
         Msg::RoutineRestarted | Msg::RoutineStarted => {
