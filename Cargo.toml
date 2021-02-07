@@ -30,20 +30,20 @@ features = [
 # Here are the original configs which result in smaller/faster binaries,
 # but take a lot longer to compile.
 
-# [profile.release]
-# lto = true
-# opt-level = 'z'
-# codegen-units = 1
+[profile.release]
+lto = true
+opt-level = 'z'
+codegen-units = 1
 
-# [package.metadata.wasm-pack.profile.release]
-# wasm-opt = ['-Os']
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = ["-Os"]
 
 # With the below settings we got compile time down to ~2 secs
   
-[profile.release]
-lto = false
-opt-level = 0
-codegen-units = 4 
-
-[package.metadata.wasm-pack.profile.release]
-wasm-opt = false
+# [profile.release]
+# lto = false
+# opt-level = 0
+# codegen-units = 4 
+# 
+# [package.metadata.wasm-pack.profile.release]
+# wasm-opt = false
